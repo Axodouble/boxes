@@ -3,7 +3,7 @@ const ctx = canvas.getContext("2d");
 
 resizeCanvas();
 
-const emojis = ["👨‍🦱"];
+const emojis = ["👨‍🦱", "👩", "👶", "🧑", "👴"];
 const boxes = [];
 let luigiIndex = -1; // Tracks the index of Luigi
 let speed = 2;
