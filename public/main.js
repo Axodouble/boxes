@@ -9,6 +9,8 @@ let luigiIndex = -1; // Tracks the index of Luigi
 let speed = 2;
 let boxesToSpawn = Math.floor((window.innerWidth * window.innerHeight) / 5184); // Adjust for screen size
 
+let disableClick = false;
+
 function resizeCanvas() {
   canvas.width = window.innerWidth;
   canvas.height = window.innerHeight;
@@ -19,6 +21,7 @@ window.addEventListener("resize", resizeCanvas);
 respawnCubes();
 
 canvas.addEventListener("click", (event) => {
+  if (disableClick) return;
   const { clientX, clientY } = event;
   const clickedBox = boxes.find(
     (box) =>
@@ -32,8 +35,41 @@ canvas.addEventListener("click", (event) => {
     if (clickedBox.emoji === "👨‍🦲") {
       respawnCubes(); // Found Luigi!
     } else {
-      alert("You lost! Click on Luigi next time!");
-      respawnCubes();
+      // Hide all boxes that are not luigi and pause the game for 2 seconds and then respawn
+      boxes.forEach((box) => {
+        if (box.emoji !== "👨‍🦲") {
+          disableClick = true;
+
+          setTimeout(() => {
+            box.opacity = 0.9;
+          }, 100);
+          setTimeout(() => {
+            box.opacity = 0.8;
+          }, 200);
+          setTimeout(() => {
+            box.opacity = 0.7;
+          }, 300);
+          setTimeout(() => {
+            box.opacity = 0.6;
+          }, 400);
+          setTimeout(() => {
+            box.opacity = 0.5;
+          }, 500);
+          setTimeout(() => {
+            box.opacity = 0.4;
+          }, 600);
+          setTimeout(() => {
+            box.opacity = 0.3;
+          }, 700);
+          setTimeout(() => {
+            box.opacity = 0.2;
+          }, 800);
+        }
+      });
+
+      setTimeout(() => {
+        respawnCubes();
+      }, 2000);
     }
   }
 });
@@ -43,6 +79,7 @@ function draw() {
 
   boxes.forEach((box) => {
     ctx.font = "48px serif";
+    ctx.globalAlpha = box.opacity;
     ctx.fillText(box.emoji, box.x, box.y + box.height);
   });
 }
@@ -62,6 +99,7 @@ function update() {
 }
 
 function respawnCubes() {
+  disableClick = false;
   boxes.length = 0; // Clear the array
 
   for (let i = 0; i < boxesToSpawn; i++) {
@@ -74,6 +112,7 @@ function respawnCubes() {
       dx: (Math.random() - 0.5) * speed * 2, // Random speed in x direction
       dy: (Math.random() - 0.5) * speed * 2, // Random speed in y direction
       emoji: emoji,
+      opacity: 1,
     };
 
     boxes.push(box);
