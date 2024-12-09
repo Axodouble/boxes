@@ -3,12 +3,11 @@ const ctx = canvas.getContext("2d");
 
 resizeCanvas();
 
-const emojis = ["🪨", "📜", "✂️"];
+const emojis = ["👨‍🦱"];
 const boxes = [];
-
-let speed = 1;
-let boxesToSpawn = (window.innerWidth * window.innerHeight) / 5184; // 5184 is the area of a 72x72 box, which is enough for 1 40x40 box
-let autoRespawn = true;
+let luigiIndex = -1; // Tracks the index of Luigi
+let speed = 2;
+let boxesToSpawn = Math.floor((window.innerWidth * window.innerHeight) / 5184); // Adjust for screen size
 
 function resizeCanvas() {
   canvas.width = window.innerWidth;
@@ -17,30 +16,34 @@ function resizeCanvas() {
 
 window.addEventListener("resize", resizeCanvas);
 
-
 respawnCubes();
 
-// if someone clicks, respawn the cubes, also for right click
-canvas.addEventListener("click", respawnCubes);
-canvas.addEventListener("contextmenu", (event) => {
-  event.preventDefault();
-  respawnCubes();
-});
-// if someone clicks the middle mouse button, enable auto-respawn
-canvas.addEventListener("auxclick", (event) => {
-  if (event.button === 1) {
-    alert(`${autoRespawn?"Disabled":"Enabled"} auto refresh.`);
-    autoRespawn = !autoRespawn;
+canvas.addEventListener("click", (event) => {
+  const { clientX, clientY } = event;
+  const clickedBox = boxes.find(
+    (box) =>
+      clientX >= box.x &&
+      clientX <= box.x + box.width &&
+      clientY >= box.y &&
+      clientY <= box.y + box.height
+  );
+
+  if (clickedBox) {
+    if (clickedBox.emoji === "👨‍🦲") {
+      respawnCubes(); // Found Luigi!
+    } else {
+      alert("You lost! Click on Luigi next time!");
+      respawnCubes();
+    }
   }
 });
-
 
 function draw() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
   boxes.forEach((box) => {
     ctx.font = "48px serif";
-    ctx.fillText(box.emoji, box.x, box.y + box.height); // Adjust text position to center it vertically
+    ctx.fillText(box.emoji, box.x, box.y + box.height);
   });
 }
 
@@ -52,46 +55,15 @@ function update() {
     if (box.x <= 0 || box.x >= canvas.width - box.width) {
       box.dx *= -1;
     }
-
     if (box.y <= 0 || box.y >= canvas.height - box.height) {
       box.dy *= -1;
-    }
-
-    // Collision detection and rock-paper-scissors
-    boxes.forEach((otherBox) => {
-      if (
-        box !== otherBox &&
-        box.x < otherBox.x + otherBox.width &&
-        box.x + box.width > otherBox.x &&
-        box.y < otherBox.y + otherBox.height &&
-        box.y + box.height > otherBox.y &&
-        ((box.emoji === "🪨" && otherBox.emoji === "✂️") ||
-          (box.emoji === "📜" && otherBox.emoji === "🪨") ||
-          (box.emoji === "✂️" && otherBox.emoji === "📜"))
-      ) {
-        otherBox.emoji = box.emoji;
-        const tempDx = box.dx;
-        box.dx = otherBox.dx;
-        otherBox.dx = tempDx;
-
-        const tempDy = box.dy;
-        box.dy = otherBox.dy;
-        otherBox.dy = tempDy;
-      }
-    });
-    if (checkIfOneTypeLeft()) {
-      autoRespawn ? respawnCubes() : null;
     }
   });
 }
 
-function checkIfOneTypeLeft() {
-  const uniqueEmojis = new Set(boxes.map((box) => box.emoji));
-  return uniqueEmojis.size === 1;
-}
-
 function respawnCubes() {
   boxes.length = 0; // Clear the array
+
   for (let i = 0; i < boxesToSpawn; i++) {
     const emoji = emojis[Math.floor(Math.random() * emojis.length)];
     const box = {
@@ -99,12 +71,17 @@ function respawnCubes() {
       y: Math.random() * (canvas.height - 50), // Random position
       width: 40, // Fixed size
       height: 40, // Fixed size
-      dx: (Math.random() - 0.5) * speed, // Random speed
-      dy: (Math.random() - 0.5) * speed, // Random speed
-      emoji: emoji, // Random emoji
+      dx: (Math.random() - 0.5) * speed * 2, // Random speed in x direction
+      dy: (Math.random() - 0.5) * speed * 2, // Random speed in y direction
+      emoji: emoji,
     };
+
     boxes.push(box);
   }
+
+  // Ensure Luigi is in the boxes
+  luigiIndex = Math.floor(Math.random() * boxes.length);
+  boxes[luigiIndex].emoji = "👨‍🦲";
 }
 
 function loop() {
