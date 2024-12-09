@@ -66,7 +66,20 @@
         );
 
         if (distance <= 40) {
-          respawnCubes(); // Found Luigi!
+          disableClick = true;
+          boxes.forEach((box) => {
+            if (box.emoji == "👨‍🦲") {
+              box.emoji = "✅";
+            } else {
+              setTimeout(() => {
+                box.opacity = 1 - i * 0.05;
+              }, i * 50);
+            }
+          });
+
+          setTimeout(() => {
+            respawnCubes();
+          }, 2000); // Found Luigi!
         } else {
           // Hide all boxes that are not luigi and pause the game for 2 seconds and then respawn
           boxes.forEach((box) => {
